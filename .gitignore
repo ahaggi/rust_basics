@@ -12,3 +12,4 @@ Cargo.lock
 # These projects have seperate repos
 rocketProjects/
 kattis/
+kattis/*
