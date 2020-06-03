@@ -1,0 +1,25 @@
+Creating a project with the commend-line
+	- Create new folder
+	- Craete a new file *.rs
+  To compile the file
+  	-In the cmd write $ rustc fileName.rs, this will create an executable file,, run it. 
+
+
+Creating a Project with Cargo
+	- "$ cargo new projectName"
+	- "$ cd projectName"
+  To compile 
+  	- "$ cargo build"
+  	- To run use "$ cargo run" or run the executable file ./target/debug/fileName.exe 
+  	- Use "$ cargo check". This command quickly checks your code to make sure it compiles but doesn’t produce an executable.
+
+
+
+
+
+
+
+cargo doc --open:
+You won’t just know which traits to use and which methods and functions to call from a crate. Instructions for using a crate are in each crate’s documentation. Another neat feature of Cargo is that you can run the cargo doc --open command, which will build documentation provided by all of your dependencies locally and open it in your browser.
+
+

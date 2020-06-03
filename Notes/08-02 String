@@ -1,0 +1,61 @@
+What Is a String?
+
+    Rust has only one string type in the core language, which is the string slice str that is usually seen in its borrowed form &str. 
+
+    The "String" type, which is provided by Rust’s standard library rather than coded into the core language, is a growable, mutable, owned, UTF-8 encoded string type. 
+
+Creating a New String
+    let mut s = String::new();
+    let mut s = String::from("");
+    let mut s = "".to_string();
+
+
+Updating a String
+    s.push_str("bar"); //The push_str method takes a string slice 
+    s.push_str( & String::from("foo") ); //The push_str method takes a string slice 
+    s.push('l'); //The push method takes a single character 
+
+  Concatenation with the + Operator or the format! Macro
+    let mut s1 = String::from("abc");
+    let mut s2 = String::from("def");
+    let s3 = s1 + &s2; 
+    Note that:
+      - s1 has been moved and can no longer be used later in the code.
+      - the reason we used a reference to s2 is that "+" operator uses the add method, whose signature looks something like: fn add(self, s: &str) -> String {..}
+      - we can only add a &str to a String; we can’t add two String values together. 
+      - we’re able to use &s2 in "add"-method becuase the compiler can coerce the &String argument into a &str. 
+    
+    let s1 = String::from("tic");
+    let s2 = String::from("tac");
+    let s3 = String::from("toe");
+    let s = s1 + "-" + &s2 + "-" + &s3; // tic-tac-toe
+
+    The version of the code using format! is much easier to read and doesn’t take ownership of any of its parameters.
+
+    let s = format!("{}-{}-{}", s1, s2, s3); // tic-tac-toe
+
+
+Rust strings don’t support indexing
+    A String is a wrapper over a Vec<u8>. which stores bytes of some text encoded in utf-8. But the (Unicode scalar values) takes diff nr of byte to store a value:
+    a : takes 1 byte
+    å : takes 2 byte
+
+    Therefore, an index into the string’s bytes will not always correlate to a valid Unicode scalar value. 
+
+    NOTE:     
+        let st = String::from("åbc");
+        let ch = &st[0..1]; // panic: because "å" takes 2 bytes, but we requested just 1
+        let ch = &st[0..2]; // ch = 'å'
+        println!("{}", st.len()); // 4
+
+    
+
+    UTF-8 uses the 2 high bits (bit 6 and bit 7) to indicate if there are any more bytes: Only the low 6 bits are used for the actual character data. That means that any character over 7F requires (at least) 2 bytes.
+    
+    A single byte can hold one of only 256 different values. This means that an encoding that represents each character as a single byte, such as ISO-8859-1, cannot encode more than 256 different characters. This is why you can't use ISO-8859-1 to correctly write Arabic, or Japanese, or many other languages. There is only a limited amount of space available, and it is already used up by other characters.
+
+    UTF-8, on the other hand, needs to be capable of representing all of the millions of characters in Unicode. This makes it impossible to squeeze every single character into a single byte.
+
+    The designers of UTF-8 chose to make all of the ASCII characters (U+0000 to U+007F) representable with a single byte, and required all other characters to be stored as two or more bytes. If they had chosen to give more characters a single-byte representation, the encodings of other characters would have been longer and more complicated.
+
+

@@ -1,0 +1,54 @@
+Functions
+
+https://stackoverflow.com/a/36390748
+    TL;DR; Basically there are 3 types of closures (callable objects):
+    Fn traits:
+        Fn: borrows values from the environment immutably.
+        FnMut: can change the environment because it mutably borrows values.
+        FnOnce: consumes the variables it captures from its enclosing scope, and take ownership of these variables and move them into the closure when it is defined.
+
+    If you are using a simple pointer-to-function like closure, then the capture set is empty and you have the Fn flavor.
+
+    In Rust there are proper pointers to functions, that work just like those in C. Their type is for example fn(i32) -> i32. The Fn(i32) -> i32, FnMut(i32) -> i32 and FnOnce(i32) -> i32 are actually traits. Obviously a pointer to function always implements all three of these, but Rust also has closures, that may or may not be converted to pointers (depending on whether the capture set is empty) to functions but they do implement some of these traits.
+
+    
+    fn fun_test_impl(value: i32, f: impl Fn(i32) -> i32) -> i32 {
+    println!("{}", f(value));
+    value
+    }
+    fn fun_test_dyn(value: i32, f: &dyn Fn(i32) -> i32) -> i32 {
+        println!("{}", f(value));
+        value
+    }
+    fn fun_test_ptr(value: i32, f: fn(i32) -> i32) -> i32 {
+        println!("{}", f(value));
+        value
+    }
+
+
+    OR 
+
+    pub fn fun_test<F, T>(value: T, f: F)
+    where
+        F: Fn(T) -> T,
+    { ... }
+
+    fn main() {
+        fn times2(value: i32) -> i32 {
+            2 * value
+        }
+
+        let y = 2;
+        //static dispatch
+        fun_test_impl(5, times2);
+        fun_test_impl(5, |x| 2*x);
+        fun_test_impl(5, |x| y*x);
+        //dynamic dispatch
+        fun_test_dyn(5, &times2);
+        fun_test_dyn(5, &|x| 2*x);
+        fun_test_dyn(5, &|x| y*x);
+        //C-like pointer to function
+        fun_test_ptr(5, times2);
+        fun_test_ptr(5, |x| 2*x); //ok: empty capture set
+        fun_test_ptr(5, |x| y*x); //error: expected fn pointer, found closure
+    }

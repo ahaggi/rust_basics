@@ -1,0 +1,158 @@
+Traits: Defining Shared Behavior ~~ Haskell-TypeClasses
+
+  We can implement a trait on some type by using either "#[derive]" attribute OR "impl block"
+    1-Derive
+      The compiler is capable of providing basic implementations for some traits via the #[derive] attribute.
+      The following is a list of derivable traits:
+        Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Hash, Default and Debug.
+    2-Impl block
+      See "01_basics::practice_traits"
+
+
+  A trait tells the Rust compiler about functionality a particular type has and can share with other types. We can use traits to define shared behavior in an abstract way. We can use trait bounds to specify that a generic can be any type that has certain behavior.
+
+  A type’s behavior consists of the methods we can call on that type. Different types share the same behavior if we can call the same methods on all of those types. 
+
+  let’s say we have multiple structs that hold various kinds and amounts of text: 
+  - "NewsArticle" struct that holds a news story filed in a particular location and 
+  - "Tweet" struct that holds a tweet (text) and metadata whether it was a new tweet, a retweet, or a reply to another tweet. 
+  and we want to write a method to print the content of one of them.
+  
+      **************************************************************
+      * FIND THE CODE AT THE WEBSIDE OR IN THE PROJECT "01_basics" *
+      **************************************************************
+
+      1- Defining a Trait
+        The defined methods can be just a definition (without a body); Or with default implementation(with a body)
+        pub trait Some_trait {
+          fn some_method(&self) -> String;  // just the definition
+        }
+      
+      2- Implementing a Trait on a Type
+        * For methods which does not have "default implementation" in the trait:
+            Within the impl block, and fill in the method body with the specific behavior that we want the methods of the trait to have for the particular type. 
+
+        * For methods which defined and have "default implementation" in the trait
+            keep the "default implementation" or we can also override it.
+  
+  
+  Default Implementations
+    Take a look at the project "01_basics::practice_traits" 
+      1- the default implementation of the method "summarize" in the "Summary" trait.
+      2- overriding of the default implementation of the method "summarize" within "impl Summary for NewsArticle {..}" 
+
+  
+
+  Implementing a trait which is defined in another "crate" for our_own_type
+    we could do so by specifying "use other_crate::Other_trait;", which then would enable us to implement Other_trait on "our type". 
+    One restriction to note with trait implementations is that we can implement a trait on a type only if either the trait or the type is local to our crate.
+    But we can’t implement external traits on external types. For example, we can’t implement the Display trait on Vec<T> within our crate.
+
+
+
+Trait Bound 
+
+  Trait Bound on parameters
+      We can define a function that ONLY accept a param which implement a certain "trait".
+
+      Trait Bound Syntax
+
+        1- Instead of a concrete type for the parameter, we specify the "impl" keyword and the trait name. 
+          pub fn notify(item: impl Summary) {
+              println!("Breaking news! {}", item.summarize());
+          }
+          we can have two parameters that implement Summary
+          pub fn notify(item1: impl Summary, item2: impl Summary) {...}
+
+        OR
+
+        2- de-sugered syntax
+            pub fn notify<T: Summary>(item: T) {
+                println!("Breaking news! {}", item.summarize());
+            }
+          we can have two parameters that implement Summary
+            pub fn notify<T: Summary>(item1: T, item2: T) {..}
+
+        3- using "where" Clauses
+            pub fn notify<T>(item1: T, item2: T) 
+                where T: Summary
+            {..}
+
+
+      Specifying Multiple Trait Bounds with the + Syntax
+
+        pub fn notify(item: impl Summary + Display) {..}
+        OR
+        pub fn notify<T: Summary + Display>(item: T) {..}
+
+        Using "where" Clauses
+          fn some_function<T, U>(item1: T, item2: U) -> i32
+              where T: Display + Clone,
+                    U: Clone + Debug
+          {...}
+
+
+
+
+
+  Trait Bound on return type
+    We can also use the impl Trait syntax in the return position to return a value of some type that implements a trait.
+    The ability to return a type that is only specified by the trait it implements is especially useful in the context of closures and iterators, which we cover in Chapter 13. 
+
+    fn returns_summarizable() -> impl Summary {..}
+    Note we can't use the "where" syntax to set trait-bounds on the return type 
+
+    However, you can only use impl Trait if you’re returning a single type. For example, this code that returns either a NewsArticle or a Tweet with the return type specified as impl Summary wouldn’t work
+
+            THIS WILL NOT WORK
+    fn returns_summarizable(switch: bool) -> impl Summary {
+        if switch {  //THIS WILL NOT WORK
+            NewsArticle {...}
+        } else {
+            Tweet {...}
+        }
+    }
+
+    We’ll cover how to write a function with this behavior in the “Using Trait Objects That Allow for Values of Different Types” section of Chapter 17.
+
+
+
+
+
+    The flwg code will not compile:
+        fn largest<T>(list: &[T]) -> T {
+            let mut largest = list[0];    // cannot move out of type `[T]`, a non-copy slice
+
+            for &item in list.iter() {    // cannot move out of type `[T]`, a non-copy slice
+                if item > largest {
+                    largest = item;  // binary operation `>` cannot be applied to type `T`
+                }
+            }
+            largest
+        }
+    How to fix it:
+        fn largest             <T: PartialOrd + Copy>(list: &[T])  -> T  {..}
+        fn largest_with_Clone  <T: PartialOrd + Clone>(list: &[T]) -> T  { code with some changing }
+        fn largest_without_Copy<T: PartialOrd >      (list: &[T])  -> &T { code with some changing }
+
+
+  Trait Bounds to Conditionally Implement Methods
+
+    we can implement methods conditionally for types that implement the specified traits. 
+    the type Pair<T> in Listing 10-16 always implements the new function. But Pair<T> only implements the cmp_display method if its inner type T implements the PartialOrd trait that enables comparison and the Display trait that enables printing. See "01_basics::practice_traits::trait_bound_to_conditionally_implement_methods()"
+
+
+
+
+  Trait Bounds to Conditionally Implement another trait "blanket implementations"
+
+    We can also conditionally implement a trait for any type that implements another trait.
+    For ex. the standard library implements the "ToString" trait on any type "T" that implements the "Display" trait.
+
+    In Haskell, we have another approch to get the same res; By setting a "typeclass constraint" on a typeclass declaration, that's means a typeclass is been made a subclass of another typeclass.
+
+    impl<T: Display> ToString for T {
+    // --snip--
+    }
+
+

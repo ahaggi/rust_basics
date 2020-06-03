@@ -1,0 +1,90 @@
+match Control Flow Operator
+match that allows you to compare a value against a series of patterns and then execute code based on which pattern matches. 
+
+    #[derive(Debug)] // so we can inspect the state in a minute
+    enum Coin {
+        Penny,
+        Nickel,
+        Dime,
+        Quarter(String),
+    }
+
+    fn value_in_cents(coin: Coin) -> u8 {
+        match coin {
+            Coin::Penny => 1,
+            Coin::Nickel => 5,
+            Coin::Dime => 10,
+            Coin::Quarter(state) => {
+                println!("State quarter from {:?}!", state);
+                25
+            },
+        }
+    }
+
+
+Matching with Option<T>
+
+
+    let five = Some(5);
+    let six = match five {
+                    None => None,
+                    Some(i) => Some(i + 1),
+                };
+    println!("{:?}" , six);
+
+
+Matches Are Exhaustive
+    in the arms of "match", you need to cover all the possible variant; if it is necessary to test for only one variant, consider using "if let" expression. 
+
+
+
+The _ Placeholder
+we can use "_" when we don’t want to list all possible values. 
+    match some_u8_value {
+        1 => println!("one"),
+        3 => println!("three"),
+        5 => println!("five"),
+        7 => println!("seven"),
+        _ => (),
+    }
+
+
+*************************************************************************************************************************
+
+
+Control Flow with if let
+
+The syntax if let takes a pattern and an expression separated by an equal sign. It works the same way as a match, where the expression is given to the match and the pattern is its first arm.
+
+we can refactore the flwg code:
+
+    let some_u8_value = Some(0u8);
+    match some_u8_value {
+        Some(3) => println!("three"),
+        _ => (),
+    }
+
+to be:
+
+    if let Some(3) = some_u8_value {
+        println!("three");
+    }
+
+Basically we move the "arm" out of the block, and to put it after "if let". 
+
+We can include an else with an if let. The block of code that goes with the else is the same as the block of code that would go with the _ case in the match expression that is equivalent to the if let and else. 
+
+    let mut count = 0;
+    match coin {
+        Coin::Quarter(state) => println!("State quarter from {:?}!", state),
+        _ => count += 1,
+    }
+
+eqv to:
+
+    let mut count = 0;
+    if let Coin::Quarter(state) = coin {
+        println!("State quarter from {:?}!", state);
+    } else {
+        count += 1;
+    }

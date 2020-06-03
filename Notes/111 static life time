@@ -1,0 +1,2 @@
+std::thread::spawn( f ) where f has 'static lifetime
+    The 'static constraint means that the closure and its return value must have a lifetime of the whole program execution. The reason for this is that threads can detach and outlive the lifetime they have been created in. Indeed if the thread, and by extension its return value, can outlive their caller, we need to make sure that they will be valid afterwards, and since we can't know when it will return we need to have them valid as long as possible, that is until the end of the program, hence the 'static lifetime.

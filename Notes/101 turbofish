@@ -1,0 +1,18 @@
+turbofish ::<T>
+    Specifies parameters to generic type, function, or method in an expression; 
+
+    let n = "2048".parse::<u32>();
+    let n:<u32> = "2048".parse();
+
+    let vec = Vec::<u8>::new();
+    let vec:<u8> = Vec::new();
+    
+    let b = (0..255).sum  ::<u32> ();
+    let c: u32 = (0..255).sum();
+
+    let mut values: Vec<i32> = (1..10).map(|x| x).collect();
+    let mut values: Vec<i32> = (1..10).into_iter().collect();
+    //Or turbofish
+    let mut values = (1..10).map(|x| x).collect  ::<i32> ();
+    let mut values = (1..10).into_iter().collect ::<i32> ();
+

@@ -1,0 +1,39 @@
+    
+lazy evaluation and memorization
+A pattern to lazily calculate and store the result inside a field
+    
+    struct Lazy_cal {
+        value: Option<u32>,
+    }
+
+    impl Lazy_cal {
+        fn new() -> Lazy_cal {
+            Lazy_cal { value: None }
+        }
+
+        fn value(&mut self) -> u32 {
+            match self.value {
+                Some(v) => v,
+                None => {
+                    // run some expensive computation to calculate "value"
+                    println!("Expensive calculations will be executed just once!!");
+
+                    let res: u32 = 1;
+                    self.value = Some(res);
+                    res
+                }
+            }
+        }
+    }
+
+    let mut l = Lazy_cal::new();
+    println!("The value is {:#?}", l.value());
+    println!("The value is {:#?}", l.value());
+    println!("The value is {:#?}", l.value());
+
+prints:
+    Expensive calculations will be executed just once!!
+    The value is 1
+
+    The value is 1
+    The value is 1

@@ -1,0 +1,10 @@
+
+
+Crossbeam
+
+Data structures
+	deque: "queue" data structures that's most commonly used in work-stealing schedulers (worker/injector/stealers).
+	MsQueue: (deprecated) classic lock-free Michael-Scott queue; It allocates "potentially moved to new memory locatoin" on every push operation, and has a blocking pop operation.
+	SegQueue: an unbounded MPMC queue that allocates small buffers, segments, on demand (tenk på DAT102 implementasjon av kø-en). SegQueue is like MsQueue, except it allocates segments of nodes. 
+	ArrayQueue: a bounded MPMC queue that allocates a fixed-capacity buffer on construction.
+

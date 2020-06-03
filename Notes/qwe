@@ -1,0 +1,100 @@
+
+Scope Resolution Operator(::)
+    1- To use an item of a module, in another context.
+        pub mod a {
+            pub f();
+        } 
+        a::f();
+
+
+    2- String::from("") To call this associated function(static methods), we use the :: syntax with the struct name; 
+
+    3- use rand::Rng;   bring the module "rand" (which 'implements' the trait "Rng") into the context.
+       rand::f();
+
+    4- use crate::some_module;  bring the item "some_module" into the context. // this is diff from "use rand::Rng;"
+       some_module::f();
+
+
+    5- 
+
+
+
+
+
+*******************************************
+
+
+
+to_string method, which is available on any type that implements the Display trait
+
+
+
+*******************************************
+
+
+let my_string = String::from("hello world");
+
+    // first_word works on slices of `String`s
+    let word = first_word(&my_string[..]);
+    let word = first_word( my_string.to_str() ) ;
+
+    &String = &str
+
+    &Vector<T> = &[T]
+
+*******************************************
+    // TODO moved to loop section
+    for i in  (0..m){..}       // for(i = 0 ; i < m ; i++)
+    for i in  (0..=m){..}  // the index m is included here for(i = 0 ; i <= m ; i++)
+
+    to iterate over a collectoin from m to 0
+    let mut i = end_ind ;
+    while i >= 0 {  // for(i = end_ind ; i >= m+1 ; i--)
+        ..
+        i-=1; // OBS due to "i >= 0" => i can't be usize of u32
+    }
+
+
+
+
+A match expression is made up of arms. An arm consists of a pattern and the code that should be run if the value given to the beginning of the match expression fits that arm’s pattern.
+
+match predicate
+	arm1 => ... ,
+	arm2 => ... ,
+	arm3 => ... ,
+
+
+
+*******************************************
+
+    let a = [1..10]; // doesNotWork `std::ops::Range<{integer}>` doesn't implement `std::fmt::Display`
+                     // use `{:?}` (or {:#?} for pretty-print) instead                   
+    let a = [1,2,3,4,5,6,7,8,9,10]; //works
+
+    for el in a.iter() {
+        println!("{}", el);
+    }
+
+    for el in &a {
+        println!("{}", el);
+    }
+
+    let mut index = 0;
+    while index < a.len() {
+        println!("the value is: {}", a[index]);
+        index += 1;
+    }
+
+
+
+*******************************************
+
+
+let my_string = String::from("hello world");
+
+    // first_word works on slices of `String`s
+    let word = first_word(&my_string[..]);
+
+

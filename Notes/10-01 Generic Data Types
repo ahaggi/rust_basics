@@ -1,0 +1,75 @@
+Generic Data Types
+
+In Function Definitions:
+    we need to name the type parameter, just as we do for the value parameters to a function. You can use any identifier as a type parameter name. But usually its T.
+  
+  Converting a function to be generic:
+
+    fn largest_i32(list: &[i32]) -> i32 {
+        let mut largest = list[0];
+
+        for &item in list.iter() {
+            if item > largest {
+                largest = item;
+            }
+        }
+
+        largest
+    }
+    
+    To be:
+
+    fn largest<T>(list: &[T]) -> T {..}
+
+    If we compile this code right now, we’ll get this error: 
+        binary operation `>` cannot be applied to type `T`,,, 
+        an implementation of `std::cmp::PartialOrd` might be missing for `T`
+
+
+
+
+
+
+In Struct Definitions:
+
+    struct Point<T> {
+        x: T,
+        y: T,
+    }
+In Method Definitions: (note methods of struct/enum not functions)
+  impl<T> Point<T> {
+    fn x(&self) -> &T {
+        &self.x
+    }
+  }
+  
+  We could, for example, implement methods only on Point<f32> instances rather than on Point<T> instances with any generic type.
+  impl Point<f32> {
+    fn x(&self) -> &f32 {
+        &self.x
+    }
+  }
+
+
+  or if x and y are diff types
+
+    struct Point<T, U> {
+        x: T,
+        y: U,
+    }
+
+
+
+
+
+
+
+In Enum Definitions:
+  The Result enum is generic over two types, T and E, and has two variants: Ok, which holds a value of type T, and Err, which holds a value of type E. 
+  enum Result<T, E> {
+    Ok(T),
+    Err(E),
+  }
+
+
+

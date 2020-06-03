@@ -1,0 +1,92 @@
+Closure
+    Rust’s closures are anonymous functions you can save in a variable or pass as arguments to other functions.
+    You can create the closure in one place and then call the closure to evaluate it in a different context. Unlike functions, closures can capture values from the scope in which they’re defined. 
+
+    Closures don’t require you to annotate the types of the parameters or the return value like fn functions do. 
+        let add_one_v2 = |x: u32| -> u32         { x + 1 };
+        let add_one_v3 = |x|                     { x + 1 };
+        let add_one_v4 = |x|                      x + 1  ;
+        let add_one_v4 = |pram_1 , .. , param_n|  x + 1  ;
+
+    if we try to call a closure twice, using a String as an argument the first time and a u32 the second time, we’ll get an error.
+        let example_closure = |x| x;
+        let s = example_closure(String::from("hello"));
+        let n = example_closure(5);    Err expected struct `std::string::String`, found integer
+
+
+
+
+    Using closure as param or field-member
+
+        fn something<F>(f: F)
+        where
+            F: Fn(u32) -> (),                  Notice the Fn trait NOT fn type
+        {
+            let x = 0;
+            f(x);
+        }
+
+        fn something2(f: fn(u32) -> ()) {       Notice fn type NOT Fn trait
+            let x = 0;
+            f(x);
+        }
+
+        let cl = |x| println!("{}", x);
+
+        something2(cl);
+
+    
+
+
+    Capturing the Environment with Closures
+        let x = 4;
+        let equal_to_x = |z| z == x;
+        let y = 4;
+        assert!(equal_to_x(y));
+
+        All closures implement at least one of the traits: Fn, FnMut, or FnOnce
+        Fn: Borrows values from the environment immutably.
+        FnMut: can change the environment because it mutably borrows values.
+        FnOnce: consumes the variables it captures from its enclosing scope, and take ownership of these variables and move them into the closure when it is defined.
+
+        If you want to force the closure to take ownership of the values it uses in the environment, you can use the move keyword before the parameter list. This technique is mostly useful when passing a closure to a new thread to move the data so it’s owned by the new thread.
+
+        What's the use-case for FnOnce? https://www.reddit.com/r/rust/comments/2s7l0m/whats_the_usecase_for_fnonce/
+        {   
+            FnOnce allows captured variables to be moved out of the closure environment. This is useful in a variety of situations, as it allows ownership of values to pass through a closure or series of nested closures e.g. when writing Node.js-style continuation-passing async code:
+
+                fn some_async_operation<F>(v: F)
+                where F: FnOnce(u32) -> (){
+                    v(0)
+                }
+                fn some_other_async_operation<F>(v: F)
+                where F: FnOnce(u32) -> (){
+                    v(1)
+                }
+
+                let owned_value = "some_value".to_string();
+
+
+                some_async_operation(move |res1| {
+                    some_other_async_operation(move |res2| {
+                        println!("{} {} {} ", owned_value, res1, res2);
+                    });
+                });
+
+                println!("{}", owned_value); // Err 
+
+
+            Here, owned_value was moved into the first closure, then out of it and into the second closure, and then out of the second closure and into do_something.
+
+
+            another answer
+
+            A couple use cases:
+                1- Thread creation. The thread function could be a closure that will only be called once and then when it returns the thread ends. You'd never call the function again.
+                2- Callbacks. Again you will only call this function once.
+                3- One-time functions. Something that must be done once (because it's not idempotent) or that you wish to throw the resources away as soon as it's over.
+
+        }
+
+
+

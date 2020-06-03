@@ -1,0 +1,51 @@
+std::thread
+    "std::thread::spawn( lambda )" Creates a new thread, returning a JoinHandle for it
+    let handler = std::thread::spawn(|| {
+        // thread code
+    });
+    handler.join().unwrap();
+
+
+
+    Threads of (std::thread) have their own stack, so if we want to use variables that we created in the main thread we will need to send them to the thread. This means that we will need to use things such as Arc to share non-mutable data. 
+        1- let x = Create the variable that you want the threads to share, AND wrapped with "Arc".
+        2- for_each thread 
+            2.1- let t_x = Arc::clone(& x) this is the same as x.clone()
+            2.2- create a thread and use "move" before the lambda.
+                 let handler = std::thread::spawn(move || { do something with t_x })
+            2.3- handler.join().unwrap();
+
+
+
+    If you want to create  "n" number of threads (which run the same code-block), and join them:
+        let threads: Vec<_> = (1..n)
+            .map(|_| {
+                let t_shared_res = shared_res.clone();
+                std::thread::spawn(move || { //"move" in order to give ownership of values to a thread.
+                    for _ in 0..1_000_000 {
+                        // Do something with t_shared_res
+                    }
+                })
+            })
+            .collect();
+
+        for t in threads {
+            t.join().unwrap();
+        }
+
+crossbeam::scope(crossbeam_utils::thread::scope) "scoped threads"
+    crossbeam::scope is an alias for crossbeam_utils::thread::scope
+
+    crossbeam threads shares thier own stacks between them. To use "crossbeam::scope" you will just need to create a Scope by calling crossbeam::scope(). You will need to pass a closure that receives the Scope. You can then call spawn().
+
+    unlike (std::thread) with "crossbeam::scope" you can share immutable variables among threads if they were created inside the scope or moved to it. This means that you can simply call their methods without requiring an Arc! This will improve the performance even further. 
+
+    we do not need to use "join()" on the "scoped threads"
+        example: Notice pattern 1 and pattern 2 in "practice_crossbeam_scope::simple_t_std();" 
+        A scope creates a clear boundary between variables outside the scope and threads inside the scope. Whenever a scope spawns a thread, it promises to join the thread before the scope ends. This way we guarantee to the borrow checker that scoped threads only live within the scope and can safely access variables outside it.
+
+IMPORTANT:
+    Take a look at examples:
+        practice_crossbeam_scope::simple_t_std();
+        practice_crossbeam_scope::simple_t_crossbeam();
+        practice_crossbeam_scope::join_all_crossbeam();

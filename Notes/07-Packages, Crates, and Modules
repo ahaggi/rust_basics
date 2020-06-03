@@ -1,0 +1,149 @@
+Managing Growing Projects with Packages, Crates, and Modules
+
+    Packages: A Cargo feature that lets you build, test, and share crates
+    Crates: A tree of modules that produces a library or executable
+    Modules and use: Let you control the organization, scope, and privacy of paths
+    Paths: A way of naming an item, such as a struct, function, or module
+
+
+Packages and Crates
+  src/main.rs and src/lib.rs are called crate roots.
+  The crate root is a source file that the Rust compiler starts from and makes up the root module of your crate.
+  
+  A crate groups related functionality together. 
+
+  A package is one or more crates that provide a set of functionality. A package contains a Cargo.toml file that describes how to build those crates. 
+  A package must contain zero or one library crates, and no more. It can contain as many binary crates as you’d like, but it must contain at least one crate (either library or binary).
+
+  "cargo new my-project" creates a package that only contains src/main.rs, meaning it only contains a binary crate named my-project. If a package contains src/main.rs and src/lib.rs, it has two crates: a library and a binary, both with the same name as the package. 
+
+
+Defining Modules to Control Scope and Privacy
+
+  Modules let us organize code within a crate. It also control the privacy of items (public/private).
+  We can have more than one module in the same file:
+
+  mod Letters{  
+      pub mod A{ // using pub here is necessary; To let the code in its ancestor modules refer to it. 
+          pub fun a(){}
+          pub fun b(){}
+      }
+      pub mod B{ // using pub here is necessary; To let the code in its ancestor modules refer to it. 
+          pub fun a(){}
+          pub fun b(){}
+      }
+  }
+
+
+  Contents of "mod-block" are private; making the module public doesn’t make its contents public. The pub keyword on a module only lets code in its ancestor modules refer to it.
+
+  
+
+  ****************************************************************************************************************
+
+
+Paths for Referring to an Item in the Module Tree
+
+  A path can take two forms:
+    An absolute path starts from a crate root by using a crate name or a literal crate.
+    A relative path starts from the current module and uses self, super, or an identifier in the current module.
+  
+  crate::some_module::some_function(); // absolute path
+         some_module::some_function(); // relative path
+
+  The way privacy works in Rust is that all items (functions, methods, structs, enums, modules, and constants) are private by default. Items in a parent module can’t use the private items inside child modules, but items in child modules can use the items in their ancestor modules. 
+
+
+  Starting Relative Paths with super
+    This is like starting a filesystem path with the '../' syntax.
+
+    some_function(){}
+
+    pub mod a{
+        super::some_function();
+    }
+
+  If we make an  "enum"  public, all of its variants are then public. 
+  If we make an "struct" public, the struct’s fields will still be private. We can make each field public or not on a case-by-case basis. 
+
+
+
+Bringing Paths into Scope with the use Keyword
+    use crate::a;
+    a::some_function();
+    a::some_function();
+    a::some_function();
+
+  is eqv to:
+
+    crate::a::some_function();
+    crate::a::some_function();
+    crate::a::some_function();
+
+
+  Adding use and a path in a scope is similar to creating a symbolic link in the filesystem. By adding "use crate::a" in the crate root, "a" is now a valid name in that scope.
+  
+    
+Providing New Names with the as Keyword
+  pub some_module1{
+      pub fun f(){}
+  }
+  pub some_module2{
+      pub fun f(){}
+  }
+
+  use some_module1 as mod1;
+  use some_module2 as mod2;
+
+  mod1::f();
+  mod2::f();
+
+
+
+Re-exporting Names with pub use
+  When we bring a name into scope with the use keyword, the name available in the new scope is private. To enable the code that calls our code to refer to that name as if it had been defined in that code’s scope, we can combine pub and use.
+
+
+Using Nested Paths
+    use std::io;
+    use std::cmp::Ordering;
+  is eqv to:
+    use std::{cmp::Ordering, io};
+
+
+The Glob Operator
+  If we want to bring all public items defined in a path into scope, we can specify that path followed by "*"
+  use std::collections::*;
+
+
+  
+
+Separating Modules into Different Files
+  https://doc.rust-lang.org/book/ch07-05-separating-modules-into-different-files.html#separating-modules-into-different-files
+  
+
+
+
+****************************************************************************************************************
+
+
+File hierarchy
+https://doc.rust-lang.org/rust-by-example/mod/split.html
+
+How to import modules in "file1" into "main.rs"
+|-- main.rs
+|-- folder1
+|   |-- file1.rs
+|   |-- mod.rs
+
+When we write "mod something;" inside main.rs, the compiler looks either in:
+    - a file called "something.rs" in the same directory.
+    - a file called "mod.rs" in a folder called "something" in the same directory.
+
+
+So (in the "main.rs") to import the content of "file1.rs" (which is located inside folder1), we have to:
+1- create a new file called "mod.rs", with this exact name.
+2- import the needed content/modules of "file1" into "mod.rs" ==> mod file1;
+3- import "mod.rs" into "main.rs"  ==> mod folder1;
+
+

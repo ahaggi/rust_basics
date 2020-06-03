@@ -1,0 +1,200 @@
+Enums and Pattern Matching
+
+    Enums allow you to define a type by enumerating its possible values. Enums are a feature in many languages, but their capabilities differ in each language. Rust’s enums are most similar to algebraic data types in functional languages, such as F#, OCaml, and Haskell.
+
+    enum IpAddrKind {
+        V4,
+        V6,
+    }
+
+    We can create instances of each of the two variants of IpAddrKind like this:
+        let four = IpAddrKind::V4;
+        let six = IpAddrKind::V6;   
+
+    Define a function that takes IpAddrKind like this:
+        fn route(ip_kind: IpAddrKind) { ... }
+        
+        route(IpAddrKind::V4);
+
+
+    enum IpAddr {
+        V4(String),
+        V6(String),
+    }
+
+    enum IpAddr {
+        V4(u8, u8, u8, u8),
+        V6(String),
+    }
+
+    This is how we can extract a value which is inside a variant:
+
+    let some_ip_addr = IpAddr::V4(String::from(127,0,0,1));
+
+        match some_ip_addr {
+            V4(a,b,c,d) => println!("the IP addr is {a}.{b}.{c}.{d}" , a , b, c, d),
+            V6(add)     => println!("the IP addr is {add}" , add),
+            _           => (),
+        }
+
+    There is one more similarity between enums and structs: just as we’re able to define methods on structs using impl, we’re also able to define methods on enums. 
+
+    enum Day{
+        MON, TUE, WED, THU , FRI,SAT , SUN
+    }
+
+    impl Day{
+        fn is_weekday(&self)-> bool{
+            match self{
+                &Day::SAT | &Day::SUN => return false,
+                _ => return true,
+            }
+
+        }
+    }
+
+*******************************************************************************************************************
+*******************************************************************************************************************
+The Option Enum 
+
+    The Option type is used in many places because it encodes the very common scenario in which a value could be something or it could be nothing. 
+
+Option Enum's Advantages Over Null Values
+    Rust doesn’t have the null feature that many other languages have. However, the concept that null is trying to express is still a useful one: a null is a value that is currently invalid or absent for some reason.
+
+    As such, Rust does have an enum that can encode the concept of a value being present or absent. This enum is Option<T>, and it is defined by the standard library as follows:
+
+        enum Option<T> {
+            Some(T),
+            None,
+        }
+    
+    The Option<T> enum is so useful that it’s even included in the prelude; you can use Some and None directly without the Option:: prefix.
+
+    let some_variable = Some(2);             // it's the same as Option::Some(2) 
+    let some_variable : Option<i32> = None;  // it's the same as Option::None  
+    let some_variable  = None::<i32>;        // it's the same as Option::None::<i32>  
+
+    Notice how we had to explicitly declare the type when we assigned the "None", we need to tell Rust what type of Option<T> we have, because the compiler can’t infer the type that the Some variant will hold by looking only at a None value.
+
+    When we have a None value, in some sense, it means the same thing as null: we don’t have a valid value. So why is having Option<T> any better than having null?
+
+    because Option<T> and T (where T can be any type) are different types, remember that Option<T> is a functor "a box", when we want to call a methode on T, we have to check whether it is Some(T) or None:
+        1- Some(T) => do something with T.
+        2- None => show Err or something.
+    
+    But with out the use of Option<T>, and the variable is invalid, we will get an err msg.
+
+    In other words, you have to convert an Option<T> to a T before you can perform T operations with it. Generally, this helps catch one of the most common issues with null: assuming that something isn’t null when it actually is.
+
+Option methods
+
+is_some() is_none()
+    let x_some = Some("abc");          //  let x : Option<&str>
+    let x_none = None::<&str>;
+
+    assert_eq!(  x_some.is_some()  , true);
+
+    assert_eq!(  x_none.is_some()  , false);
+    assert_eq!(  x_none.is_none()  , true);
+
+---------------------------------------------------
+- contains ,,, error[E0658]: use of unstable library feature 'option_result_contains'
+-   Notice that the arg of contains is a ref      -
+-     assert_eq!(  x_some.contains(&2)  , true);  -   
+-     assert_eq!(  x_some.contains(&3)  , false); -
+---------------------------------------------------
+map  
+  fn map<U, F>(self, f: F) -> Option<U> 
+  maps over the value and returns Option<T>
+    let maybe_some_len = x_some.map(|s| s.len());
+    assert_eq!(  maybe_some_len  ,   Some(3));
+
+    gatcha!!
+    some_option.map() will consume/move the ownership to map(), that means some_option is invalid; if we try to use some_option later, we'll get an Err "value borrowed here after move"
+
+    solution 
+    use .as_ref().map(,,,) instead
+
+        let maybe_some_len = x_some.as_ref().map(|s| s.len());
+        assert_eq!(  maybe_some_len  ,   Some(3));
+
+
+
+as_ref    
+  fn as_ref(&self) -> Option<&T>
+  Converts from &Option<T> to Option<&T>.
+
+
+
+unwrap
+  fn unwrap(self) -> T
+  Panics if the self value equals None.
+    let x = Some("air");
+    assert_eq!(  x.unwrap()  ,     "air" );
+    assert_eq!(  x_some.unwrap(),   "abc");
+
+
+map_or
+  fn map_or<U, F>(self, default: U, f: F) -> U 
+  Notice how the return value is U NOT Option<U> as map!!!
+    Applies a function to the contained value (if any), or returns the provided default (if not).
+
+    assert_eq!(  x_none.map_or(42, |v| v.len())  ,    42);
+
+    assert_eq!(  x_some.map_or("".to_string(), |v| v)  ,   "abc".to_string());
+
+    gatcha!!
+    some_option.map_or() will consume/move the ownership to map_or(), that means some_option is invalid; if we try to use some_option later, we'll get an Err "value borrowed here after move"
+
+
+
+map_or_else
+  fn map_or_else<U, D, F>(self, default: D, f: F) -> U 
+  Notice how the return value is U NOT Option<U> as map!!!
+    Applies a function to the contained value (if any), or computes a default (if not).
+
+    let k = 21;
+    assert_eq!(x_some.map_or_else(|| 2 * k, |v| v.len()), 3);
+    assert_eq!(x_none.map_or_else(|| 2 * k, |v| v.len()), 42);
+
+    gatcha!!
+    some_option.map_or_else() will consume/move the ownership to map_or_else(), that means some_option is invalid; if we try to use some_option later, we'll get an Err "value borrowed here after move"
+
+
+ok_or
+  fn ok_or<E>(self, err: E) -> Result<T, E>
+  Transforms the Option<T> into a Result<T, E>, mapping Some(v) to Ok(v) and None to Err(err).
+    assert_eq!(x.ok_or(0), Ok("foo"));
+    assert_eq!(x_some.as_ref().ok_or(0), Ok(&"abc".to_string())); //IMPORTANT: notice how the content of OK() is borrowed String
+    assert_eq!(x_some         .ok_or(0), Ok("abc".to_string()));
+
+
+and
+  fn and<U>(self, optb: Option<U>) -> Option<U>
+  Returns None if the option is None, otherwise returns optb.
+    assert_eq!(  x_some.as_ref()     .and(  Some("def")  ),    Some("def")                );
+    assert_eq!(  Some("def").as_ref().and(    x_some     ),    Some(("abc").to_string())  );
+
+
+or
+fn or(self, optb: Option<T>) -> Option<T>
+    let x = Some(2);
+    let y = Some(100);
+    assert_eq!(x.or(y), Some(2));
+
+
+filter
+    assert_eq!(Some(1).filter(|n| n % 2 == 0), None);
+    assert_eq!(Some(2).filter(|n| n % 2 == 0), Some(2));
+    assert_eq!(None.filter(|n| n % 2 == 0), None);
+
+
+replace
+  fn replace(&mut self, value: T) -> Option<T>
+
+    let mut old_2 = Some(2);
+    let new_2 = old_2.replace(5);
+
+    assert_eq!(old_2, Some(5));
+    assert_eq!(new_2, Some(2));    
